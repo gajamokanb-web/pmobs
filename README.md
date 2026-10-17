@@ -29,3 +29,6 @@ Onglet « Modules » de l'application. Le module 1 reste le parcours de flashcar
 | 7 Oversight Challenge | Scénario + tuiles KPI + question A à D + bonne réponse | 50 |
 
 Sources : `src/gd*.js` (données), `src/jeux.js` (moteur). Progression synchronisée avec le compte (clé `m`). Le module 5 n'a pas été défini.
+
+## Langue FR / EN
+Le bouton `EN` / `FR` de la barre du bas bascule toute l'application (flashcards, cas pratiques, interface). Le choix est mémorisé sur l'appareil. Sources : `src/en*.js` (flashcards en anglais), `src/ge*.js` (cas en anglais), `src/i18n.js` (interface et bascule). Le français reste la langue par défaut.

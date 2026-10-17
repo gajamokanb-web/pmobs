@@ -114,7 +114,7 @@ function counts(ids){var g=0,a=0,u=0;ids.forEach(function(id){var s=status(id);i
 function bar(c,cls){var n=c.n||1;return '<span class="bar '+(cls||"")+'" role="img" aria-label="'+c.g+' maîtrisées, '+c.a+' à revoir, '+c.u+' non vues"><i class="g" style="width:'+(c.g/n*100)+'%"></i><i class="a" style="width:'+(c.a/n*100)+'%"></i></span>';}
 function dot(s){return '<i class="dot'+(s===2?" g":s===1?" a":"")+'"></i>';}
 function missing(ids){var v=visIds(ids);return v.filter(function(i){return status(i)===1;}).concat(v.filter(function(i){return status(i)===0;}));}
-function plural(n,w){return n+" "+w+(n>1?"s":"");}
+function plural(n,w){return n+" "+w+(n>1&&w!=="cas"?"s":"");}
 var toastT=null;
 function toast(msg){var el=$("#toast");el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){el.hidden=true;},2600);}
 

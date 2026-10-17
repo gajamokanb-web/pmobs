@@ -8,16 +8,21 @@ var MODS=[
 ];
 var CS={quiz:[],port:[],deci:[],kpi:[],chal:[]}, CBY={};
 function addCase(m,o){o.m=m;o.id=m+"-"+(CS[m].length+1);CS[m].push(o);CBY[o.id]=o;}
-QZ.forEach(function(r){addCase("quiz",{tag:r[0],label:r[1],q:r[1],o:r[2],exp:r[3]});});
-CH.forEach(function(r){addCase("chal",{tag:r[0],label:r[1],title:r[1],sub:r[2],text:r[3],tiles:r[4],q:r[5],o:r[6],exp:r[7]});});
-PF.forEach(function(r){addCase("port",{tag:r[0],label:r[1],title:r[1],ctx:r[2],tiles:r[3],flags:r[4],o:r[5],exp:r[6]});});
-DC.forEach(function(r){addCase("deci",{tag:r[0],label:r[1],title:r[1],intro:r[2],steps:r[3]});});
-AT.forEach(function(r){
-  var k=r[0];
-  if(k==="classer")addCase("kpi",{tag:"Classer",k:k,label:r[1],title:r[1],intro:r[2],items:r[3]});
-  else if(k==="seuil")addCase("kpi",{tag:"Seuils",k:k,label:r[1],title:r[1],text:r[2],q:r[3],o:r[4],exp:r[5],tiles:[]});
-  else addCase("kpi",{tag:"Notation",k:k,label:r[1],title:r[1],ctx:r[2],rows:r[3],ans:r[4],exp:r[5]});
-});
+function buildCases(en){
+  CBY={}; Object.keys(CS).forEach(function(k){CS[k]=[];});
+  var qz=en?QZ_EN:QZ, ch=en?CH_EN:CH, pf=en?PF_EN:PF, dc=en?DC_EN:DC, at=en?AT_EN:AT;
+  qz.forEach(function(r){addCase("quiz",{tag:r[0],label:r[1],q:r[1],o:r[2],exp:r[3]});});
+  ch.forEach(function(r){addCase("chal",{tag:r[0],label:r[1],title:r[1],sub:r[2],text:r[3],tiles:r[4],q:r[5],o:r[6],exp:r[7]});});
+  pf.forEach(function(r){addCase("port",{tag:r[0],label:r[1],title:r[1],ctx:r[2],tiles:r[3],flags:r[4],o:r[5],exp:r[6]});});
+  dc.forEach(function(r){addCase("deci",{tag:r[0],label:r[1],title:r[1],intro:r[2],steps:r[3]});});
+  at.forEach(function(r){
+    var k=r[0];
+    if(k==="classer")addCase("kpi",{tag:"Classer",k:k,label:r[1],title:r[1],intro:r[2],items:r[3]});
+    else if(k==="seuil")addCase("kpi",{tag:"Seuils",k:k,label:r[1],title:r[1],text:r[2],q:r[3],o:r[4],exp:r[5],tiles:[]});
+    else addCase("kpi",{tag:"Notation",k:k,label:r[1],title:r[1],ctx:r[2],rows:r[3],ans:r[4],exp:r[5]});
+  });
+}
+buildCases(false);
 function MOD(id){return MODS.filter(function(x){return x.id===id;})[0];}
 function mdone(id){var v=st.m[id];return !!v&&v[0]>=70;}
 function msave(id,score){var v=st.m[id];st.m[id]=[Math.max(score,v?v[0]:0),(v?v[1]:0)+1,Date.now()];persist();}
@@ -161,8 +166,8 @@ function portPick(k){
 }
 
 /* Décisions et escalade */
-function dNext(o){return o[2].length>=30?o[2]:o[1]>=3?"La situation est prise en main et la suite repose sur des faits documentés.":o[1]>=1?"Le sujet est traité en partie, mais une zone de risque reste ouverte.":"Le sujet n'est pas traité : le risque persiste et devient plus difficile à gérer.";}
-function dWhy(o){return o[3].length>=30?o[3]:o[1]>=3?"Réponse proportionnée : elle s'appuie sur des faits, passe par la bonne gouvernance et laisse une trace.":o[1]>=1?"Réponse partielle ou disproportionnée : il manque l'analyse, la gouvernance ou une mesure proportionnée.":"Cette option ne répond pas au risque et peut aggraver le manquement.";}
+function dNext(o){var e=LANG==="en";return o[2].length>=30?o[2]:o[1]>=3?(e?"The situation is under control and what follows rests on documented facts.":"La situation est prise en main et la suite repose sur des faits documentés."):o[1]>=1?(e?"The matter is partly dealt with, but a risk area remains open.":"Le sujet est traité en partie, mais une zone de risque reste ouverte."):(e?"The matter is not dealt with: the risk persists and becomes harder to manage.":"Le sujet n'est pas traité : le risque persiste et devient plus difficile à gérer.");}
+function dWhy(o){var e=LANG==="en";return o[3].length>=30?o[3]:o[1]>=3?(e?"Proportionate response: it relies on facts, goes through the right governance and leaves a record.":"Réponse proportionnée : elle s'appuie sur des faits, passe par la bonne gouvernance et laisse une trace."):o[1]>=1?(e?"Partial or disproportionate response: analysis, governance or a proportionate measure is missing.":"Réponse partielle ou disproportionnée : il manque l'analyse, la gouvernance ou une mesure proportionnée."):(e?"This option does not address the risk and may worsen the breach.":"Cette option ne répond pas au risque et peut aggraver le manquement.");}
 function deciStart(c){
   G.pm={s:0,picks:[],perm:null};
   gBody(scnHtml({title:c.title,tiles:[]},"Incident · "+c.tag,c.intro,"Incident")+'<p class="help2">Tu vas prendre '+c.steps.length+" décisions. Chaque choix ouvre la suite. Les conséquences sont expliquées à la fin.</p>");

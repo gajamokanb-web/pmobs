@@ -149,6 +149,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .act.green{background:var(--green);color:var(--on-green)}
 .tabs .in{max-width:640px;margin:0 auto;display:flex}
 .tabs button{flex:1;background:none;border:0;padding:10px;font-weight:650;color:var(--muted);border-top:2px solid transparent;margin-top:-9px;padding-top:15px}
+.tabs button.lang{flex:0 0 52px;padding-left:0;padding-right:0;color:var(--accent);font-size:13px;letter-spacing:.04em}
 .tabs button[aria-current="page"]{color:var(--accent);border-top-color:var(--accent)}
 
 /* sheet */
@@ -594,6 +595,7 @@ html.play .tabs{background:var(--pl-bg);border-top:2px solid var(--pl-line)}
   <button type="button" data-go="mods">Modules</button>
   <button type="button" data-go="home">Thèmes</button>
   <button type="button" data-go="bilan">Bilan</button>
+  <button type="button" id="langBtn" class="lang" aria-label="Switch to English">EN</button>
 </div></nav>
 
 <div class="actions" id="actions" hidden><div class="in">
