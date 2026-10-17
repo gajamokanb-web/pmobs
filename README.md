@@ -15,3 +15,17 @@ Ouvrir `index.html` dans un navigateur. La progression est enregistrée dans le 
 - `questions.csv` : toutes les questions, réponses et explications (séparateur `;`, UTF-8)
 - `src/data*.js` : banque de questions ; `src/head.html` et `src/app.js` : interface
 - `./build.sh` régénère `index.html` ; `node export_csv.js` régénère `questions.csv`
+
+## Modules 2 à 7 (cas pratiques fictifs)
+
+Onglet « Modules » de l'application. Le module 1 reste le parcours de flashcards.
+
+| Module | Contenu | Cas |
+|---|---|---|
+| 2 Quiz pièges | QCM à 4 réponses, distracteurs crédibles, explication immédiate | 49 |
+| 3 Analyse de portefeuille | Coche les anomalies, puis décide s'il faut escalader | 50 |
+| 4 Décisions et escalade | Incident à embranchements (3 décisions), conséquences en fin de partie | 48 |
+| 6 Atelier KPI et scorecards | Classer KPI/KRI/contrôle/escalade, fixer des seuils, noter un délégataire | 49 |
+| 7 Oversight Challenge | Scénario + tuiles KPI + question A à D + bonne réponse | 50 |
+
+Sources : `src/gd*.js` (données), `src/jeux.js` (moteur). Progression synchronisée avec le compte (clé `m`). Le module 5 n'a pas été défini.

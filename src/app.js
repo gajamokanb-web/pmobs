@@ -36,10 +36,10 @@ function norm(s){return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ
 
 /* ---------- state ---------- */
 var LS="prepa-pmo-v1", LSF="prepa-pmo-focus";
-var st={p:{},n:{},r:0,g:{}};
+var st={p:{},n:{},r:0,g:{},m:{}};
 var focus="all";
 function loadLocal(){
-  try{var raw=localStorage.getItem(LS); if(raw){var o=JSON.parse(raw); st={p:o.p||{},n:o.n||{},r:o.r||0,g:o.g||{}};}}catch(e){}
+  try{var raw=localStorage.getItem(LS); if(raw){var o=JSON.parse(raw); st={p:o.p||{},n:o.n||{},r:o.r||0,g:o.g||{},m:o.m||{}};}}catch(e){}
   try{var f=localStorage.getItem(LSF); if(f==="B"||f==="I"||f==="all") focus=f;}catch(e){}
 }
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(st));}catch(e){}}
@@ -50,9 +50,10 @@ function noteOf(id){var v=st.n[id];return v?v[0]:"";}
 function setNote(id,txt){if(noteOf(id)===txt)return;st.n[id]=[txt,Date.now()];persist();}
 function persist(){saveLocal();schedulePush();}
 function merge(a,b){
-  var r=Math.max(a.r||0,b.r||0), out={p:{},n:{},r:r,g:{}};
+  var r=Math.max(a.r||0,b.r||0), out={p:{},n:{},r:r,g:{},m:{}};
   [a,b].forEach(function(src){
-    var p=src.p||{}, n=src.n||{}, g=src.g||{};
+    var p=src.p||{}, n=src.n||{}, g=src.g||{}, mm=src.m||{};
+    Object.keys(mm).forEach(function(k){var v=mm[k]; if(!Array.isArray(v)||v[2]<r)return; if(!out.m[k]||out.m[k][2]<v[2]) out.m[k]=v;});
     Object.keys(g).forEach(function(k){if(typeof g[k]==="number"&&g[k]>(out.g[k]||0))out.g[k]=g[k];});
     Object.keys(p).forEach(function(k){var v=p[k]; if(!Array.isArray(v)||!Q[k]||v[1]<r)return; if(!out.p[k]||out.p[k][1]<v[1]) out.p[k]=v;});
     Object.keys(n).forEach(function(k){var v=n[k]; if(!Array.isArray(v))return; if(!out.n[k]||out.n[k][1]<v[1]) out.n[k]=v;});
@@ -77,9 +78,9 @@ function initRemote(){
       return remote.ref.get().then(function(snap){
         remote.ok=true;
         if(snap.exists){
-          var d=snap.data()||{}, rem={p:d.p||{},n:d.n||{},r:d.r||0,g:d.g||{}};
+          var d=snap.data()||{}, rem={p:d.p||{},n:d.n||{},r:d.r||0,g:d.g||{},m:d.m||{}};
           var m=merge(st,rem);
-          var changed=JSON.stringify(m)!==JSON.stringify(merge(rem,{p:{},n:{},r:0,g:{}}));
+          var changed=JSON.stringify(m)!==JSON.stringify(merge(rem,{p:{},n:{},r:0,g:{},m:{}}));
           st=m; saveLocal(); refresh();
           if(changed) schedulePush();
         } else if(Object.keys(st.p).length||Object.keys(st.n).length){ schedulePush(); }
@@ -95,7 +96,7 @@ function schedulePush(){
 function push(){
   if(!remote.ok||remote.busy||!remote.dirty)return;
   remote.busy=true; remote.dirty=false;
-  remote.ref.set({p:st.p,n:st.n,r:st.r,g:st.g}).then(function(){setSync("cloud");}).catch(function(e){
+  remote.ref.set({p:st.p,n:st.n,r:st.r,g:st.g,m:st.m}).then(function(){setSync("cloud");}).catch(function(e){
     var c=e&&e.code;
     if(c==="invalid_argument"||c==="revoked"||c==="not_granted"||c==="quota_exceeded"||c==="capability_disabled"||c==="capability_removed"){remote.ok=false;setSync("local");}
     else{remote.dirty=true;}
@@ -118,15 +119,15 @@ var toastT=null;
 function toast(msg){var el=$("#toast");el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){el.hidden=true;},2600);}
 
 /* ---------- views ---------- */
-var VIEWS=["path","lesson","done","home","theme","card","end","bilan"], cur="path";
+var VIEWS=["path","lesson","done","home","theme","card","end","bilan","mods","mod","game"], cur="path";
 function show(v){
   VIEWS.forEach(function(x){$("#v-"+x).hidden=(x!==v);});
   cur=v;
-  $("#tabs").hidden=!(v==="path"||v==="home"||v==="bilan"||v==="theme");
-  document.documentElement.classList.toggle("play",v==="path"||v==="lesson"||v==="done");
+  $("#tabs").hidden=!(v==="path"||v==="home"||v==="bilan"||v==="theme"||v==="mods"||v==="mod");
+  document.documentElement.classList.toggle("play",v==="path"||v==="lesson"||v==="done"||v==="mods"||v==="mod"||v==="game");
   $("#actions").hidden=(v!=="card");
   document.querySelectorAll("#tabs button").forEach(function(b){
-    var on=b.dataset.go===v||(v==="theme"&&b.dataset.go==="home");
+    var on=b.dataset.go===v||(v==="theme"&&b.dataset.go==="home")||(v==="mod"&&b.dataset.go==="mods");
     if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
   });
   window.scrollTo(0,0);
@@ -136,6 +137,8 @@ function go(v){
   if(v==="theme")renderTheme();
   if(v==="bilan")renderBilan();
   if(v==="path")renderPath();
+  if(v==="mods")renderMods();
+  if(v==="mod")renderMod();
   show(v);
   if(v==="path")scrollCur();
 }
@@ -144,6 +147,8 @@ function refresh(){
   else if(cur==="home")renderHome();
   else if(cur==="theme")renderTheme();
   else if(cur==="bilan")renderBilan();
+  else if(cur==="mods")renderMods();
+  else if(cur==="mod")renderMod();
   else if(cur==="card")renderStatusChip();
 }
 
@@ -427,7 +432,7 @@ $("#lRight").addEventListener("click",function(){lessonMark(2);});
 $("#lNext").addEventListener("click",lessonNext);
 $("#lMore").addEventListener("click",function(){openSheet(lid(),true);});
 $("#lClose").addEventListener("click",function(){go("path");});
-$("#dGo").addEventListener("click",function(){$("#confetti").hidden=true;go("path");});
+$("#dGo").addEventListener("click",function(){$("#confetti").hidden=true;var t=doneTo;doneTo="path";go(t);});
 
 /* ---------- events ---------- */
 document.addEventListener("click",function(e){var b=e.target.closest("button[data-f]");if(!b)return;focus=b.dataset.f;try{localStorage.setItem(LSF,focus);}catch(err){}refresh();});
@@ -463,7 +468,7 @@ $("#bReset").addEventListener("click",function(){
   var b=$("#bReset");
   if(!armed){b.textContent="Confirmer la remise à zéro";b.classList.add("armed");armed=setTimeout(function(){armed=null;b.textContent="Remettre la progression à zéro";b.classList.remove("armed");},4000);return;}
   clearTimeout(armed);armed=null;b.textContent="Remettre la progression à zéro";b.classList.remove("armed");
-  st.p={};st.r=Date.now();persist();renderBilan();toast("Progression remise à zéro.");
+  st.p={};st.m={};st.r=Date.now();persist();renderBilan();toast("Progression remise à zéro.");
 });
 
 /* tap card to reveal, swipe to navigate */
@@ -484,11 +489,3 @@ document.addEventListener("keydown",function(e){
   else if(e.key==="Escape"){stopTimer();go(S?S.from:"home");}
 });
 
-/* ---------- boot ---------- */
-loadLocal();
-renderPath();
-show("path");
-scrollCur();
-setSync("pending");
-initRemote();
-})();
