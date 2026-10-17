@@ -2,8 +2,8 @@
 
 Application de révision mobile pour préparer des entretiens en Portfolio Management Oversight au Luxembourg (BEFM / Blackstone, IRE AIFM).
 
-- 211 questions sur 18 thèmes (délégation, Investment Advisors, CSSF, AIFMD II, PE, VC, fonds de fonds, dette privée, immobilier, valorisation, risque, structures, compliance, IA et automatisation, études de cas, anglais)
-- **Parcours** : interface ludique en leçons de 5 questions, XP, série quotidienne, objectif du jour, questions à revoir reposées en fin de leçon
+- 290 questions sur 19 thèmes (dont les « Questions ajoutées ») (délégation, Investment Advisors, CSSF, AIFMD II, PE, VC, fonds de fonds, dette privée, immobilier, valorisation, risque, structures, compliance, IA et automatisation, études de cas, anglais)
+- **Parcours** : interface ludique, thèmes repliés par défaut avec liste des questions à choisir, XP, série quotidienne, objectif du jour, questions à revoir reposées en fin de session
 - **Thèmes / Bilan** : mode classique avec réponse courte, explication détaillée, suivi vert / ambre / non vu, entretien blanc chronométré, notes personnelles
 
 ## Utilisation

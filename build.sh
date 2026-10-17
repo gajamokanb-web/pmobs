@@ -6,7 +6,7 @@ cd "$(dirname "$0")/src" || exit 1
 body() {
   cat head.html
   printf '\n<script>\nvar D=[];\n'
-  cat data1.js data2.js data3.js data4.js app.js
+  cat data1.js data2.js data3.js data4.js data5.js app.js
   printf '\n</script>\n'
 }
 if [ "$1" = "bare" ]; then

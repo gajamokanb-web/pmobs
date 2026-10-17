@@ -1,6 +1,6 @@
 // Exporte toutes les questions en CSV (séparateur ;, UTF-8 avec BOM, ouvrable dans Excel)
 const fs = require("fs");
-const src = ["data1.js", "data2.js", "data3.js", "data4.js"].map(f => fs.readFileSync(__dirname + "/src/" + f, "utf8")).join("\n");
+const src = ["data1.js", "data2.js", "data3.js", "data4.js", "data5.js"].map(f => fs.readFileSync(__dirname + "/src/" + f, "utf8")).join("\n");
 const D = []; new Function("D", src)(D);
 const LVL = {1: "Fondamental", 2: "Confirmé", 3: "Expert"}, OFF = {B: "BEFM", I: "IRE AIFM", "": "Les deux"};
 const clean = s => s.split("\n").map(l => l.trim()).filter(Boolean).map(l =>

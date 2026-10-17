@@ -313,9 +313,9 @@ function todayXp(){return +st.g[dayKey()]||0;}
 function streak(){var n=0,d=new Date();if(!st.g[dayKey(d)])d.setDate(d.getDate()-1);while(st.g[dayKey(d)]>0){n++;d.setDate(d.getDate()-1);}return n;}
 function vibrate(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
 
-function lessonsOf(t){var ids=visIds(t.ids),o=[];for(var i=0;i<ids.length;i+=LESSON_SIZE)o.push(ids.slice(i,i+LESSON_SIZE));return o;}
-function lstate(ids){var g=0,s=0;ids.forEach(function(i){var v=status(i);if(v===2)g++;if(v)s++;});return {done:g===ids.length,p:Math.round(g/ids.length*100),started:s>0};}
-var pathMap=[];
+var CHEV='<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var CHECK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var pathThemes=[], openTh={}, anchorTh=null;
 function renderPath(){
   document.querySelectorAll("button[data-f]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.f===focus));});
   var s=streak(), td=todayXp();
@@ -323,25 +323,28 @@ function renderPath(){
   $("#pXp").textContent=totalXp();
   $("#pGoalTxt").textContent=Math.min(td,DAILY_GOAL)+" / "+DAILY_GOAL+" XP aujourd'hui";
   $("#pGoalBar").style.width=Math.min(100,td/DAILY_GOAL*100)+"%";
-  var h="", cur=null; pathMap=[];
+  var h="", left=0; pathThemes=[];
   D.forEach(function(t,ti){
-    var hu=HUES[ti%HUES.length], ls=lessonsOf(t), c=counts(visIds(t.ids));
-    if(!ls.length)return;
-    h+='<section class="psec"><div class="pban" style="--f:'+hu[0]+';--e:'+hu[1]+'"><div><div class="k">Thème '+(ti+1)+' · '+esc(t.c)+'</div><h3>'+esc(t.n)+'</h3></div><span class="cnt">'+c.g+"/"+c.n+'</span></div><div class="pnodes">';
-    ls.forEach(function(ids,li){
-      var st2=lstate(ids), idx=pathMap.length;
-      pathMap.push({ids:ids,label:t.n,hue:hu[0]});
-      var isCur=(cur===null&&!st2.done); if(isCur)cur=idx;
-      var f=st2.done?GOLD:hu[0], e=st2.done?GOLD_E:hu[1];
-      h+='<div class="pn'+(isCur?" hascur":"")+'" style="transform:translateX('+OFFS[li%OFFS.length]+'px)">'+(isCur?'<span class="pbub">'+(st2.started?"Continuer":"Commencer")+'</span>':"")+
-        '<span class="ring" style="--p:'+st2.p+';--rc:'+f+'"><button type="button" class="node'+(st2.done?" done":"")+(isCur?" cur":"")+'" data-i="'+idx+'" style="--f:'+f+';--e:'+e+'" aria-label="'+esc(t.n)+', leçon '+(li+1)+" sur "+ls.length+(st2.done?", maîtrisée":"")+'">'+STAR+"</button></span></div>";
+    var ids=visIds(t.ids); if(!ids.length)return;
+    var hu=HUES[ti%HUES.length], c=counts(ids), idx=pathThemes.length, open=!!openTh[t.id];
+    var first=-1; ids.forEach(function(i,k){if(first<0&&status(i)!==2)first=k;});
+    left+=c.a+c.u;
+    pathThemes.push({id:t.id,ids:ids,label:t.n,hue:hu[0]});
+    h+='<section class="psec"><h3 class="ph"><button type="button" class="pban" data-th="'+t.id+'" aria-expanded="'+open+'" aria-controls="pl-'+t.id+'" style="--f:'+hu[0]+';--e:'+hu[1]+'"><span class="pbt"><span class="k">Thème '+(idx+1)+' · '+esc(t.c)+'</span><span class="h">'+esc(t.n)+'</span><span class="mini"><i style="width:'+(c.g/c.n*100)+'%"></i></span></span><span class="cnt">'+c.g+"/"+c.n+"</span>"+CHEV+"</button></h3>";
+    h+='<div class="plist" id="pl-'+t.id+'"'+(open?"":" hidden")+'><button type="button" class="pbtn green pgo" data-ti="'+idx+'" data-i="'+(first<0?0:first)+'">'+(first<0?"Tout revoir":c.g||c.a?"Continuer le thème":"Commencer le thème")+"</button>";
+    ids.forEach(function(id,i){
+      var x=Q[id], v=status(id);
+      h+='<button type="button" class="prow" data-ti="'+idx+'" data-i="'+i+'"><span class="dt s'+v+'" role="img" aria-label="'+(v===2?"maîtrisée":v===1?"à revoir":"non vue")+'">'+(v===2?CHECK:"")+'</span><span class="pq"><span class="pt">'+esc(x.q)+"</span><small>"+LVL[x.l]+(x.o?" · "+OFF[x.o]:"")+"</small></span></button>";
     });
     h+="</div></section>";
   });
-  if(cur===null&&pathMap.length)h='<p class="pdone">Parcours terminé. Rouvre une leçon pour t\'entraîner.</p>'+h;
+  if(pathThemes.length&&!left)h='<p class="pdone">Tout est maîtrisé. Rouvre un thème pour t\'entraîner.</p>'+h;
   $("#pList").innerHTML=h;
 }
-function scrollCur(){var el=document.querySelector(".node.cur");if(el)setTimeout(function(){el.scrollIntoView({block:"center"});},40);}
+function scrollCur(){
+  var el=anchorTh&&document.querySelector('.pban[data-th="'+anchorTh+'"]');
+  if(el)setTimeout(function(){el.scrollIntoView({block:"start"});},40);
+}
 
 /* leçon */
 var L=null;
@@ -410,7 +413,13 @@ function confetti(){
     if(k<2600)requestAnimationFrame(f);else{ctx.clearRect(0,0,w,h);c.hidden=true;}
   })(t0);
 }
-$("#pList").addEventListener("click",function(e){var b=e.target.closest(".node");if(!b)return;var m=pathMap[+b.dataset.i];if(m)startLesson(m.ids,m.label,m.hue);});
+$("#pList").addEventListener("click",function(e){
+  var ban=e.target.closest(".pban");
+  if(ban){var id=ban.dataset.th, open=ban.getAttribute("aria-expanded")!=="true"; openTh[id]=open; ban.setAttribute("aria-expanded",String(open)); document.getElementById("pl-"+id).hidden=!open; return;}
+  var b=e.target.closest("[data-ti]"); if(!b)return;
+  var m=pathThemes[+b.dataset.ti]; if(!m)return;
+  anchorTh=m.id; startLesson(m.ids.slice(+b.dataset.i),m.label,m.hue);
+});
 $("#lShow").addEventListener("click",function(){setPhase("grade");});
 $("#lSkip").addEventListener("click",lessonSkip);
 $("#lWrong").addEventListener("click",function(){lessonMark(1);});
