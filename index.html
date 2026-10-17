@@ -146,6 +146,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .alabel{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .atext{font-family:var(--f-read);font-size:17px;line-height:1.55;margin:6px 0 0;max-width:65ch}
 .more{margin-top:12px;background:none;border:0;padding:6px 0;color:var(--accent);font-weight:650}
+.cexp-l{margin-top:16px}
 .hint{color:var(--muted);font-size:12.5px;text-align:center;margin:12px 0 0}
 .actions,.tabs{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);border-top:1px solid var(--line);
   padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -269,6 +270,8 @@ html.play .tabs{background:var(--pl-bg);border-top:2px solid var(--pl-line)}
 .lans{border:2px solid var(--pl-line);background:var(--pl-soft);border-radius:16px;padding:14px 16px}
 .lans .alabel{font-family:var(--f-play);font-weight:900;color:var(--pl-muted)}
 .lans p{margin:6px 0 0;font-size:17px;font-weight:700;line-height:1.5;max-width:65ch}
+.lans .detail{margin-top:8px}
+.lans .detail p,.lans .detail ul{font-family:var(--f-play);font-weight:700;font-size:16px;line-height:1.55}
 .lans .more{font-family:var(--f-play);font-weight:900;color:var(--pl-blue)}
 .lfoot{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--pl-bg);border-top:2px solid var(--pl-line);padding:14px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .lfoot.good{background:var(--pl-ok-bg);border-top-color:transparent}
@@ -329,7 +332,11 @@ html.play .tabs{background:var(--pl-bg);border-top:2px solid var(--pl-line)}
     <div class="lans" id="lAns" hidden>
       <div class="alabel">Réponse</div>
       <p id="lAText"></p>
-      <button type="button" class="more" id="lMore">Explication détaillée et mes notes →</button>
+    </div>
+    <div class="lans" id="lExp" hidden>
+      <div class="alabel">Explication détaillée</div>
+      <div class="detail" id="lExpBody"></div>
+      <button type="button" class="more" id="lMore">Mes notes →</button>
     </div>
   </div>
   <div class="lfoot" id="lFoot"><div class="in">
@@ -436,13 +443,14 @@ html.play .tabs{background:var(--pl-bg);border-top:2px solid var(--pl-line)}
   <div class="progress"><i id="cProg"></i></div>
   <article class="card" id="card">
     <div class="chips"><span class="code" id="cCode"></span><span class="chip" id="cLvl"></span><span class="chip off" id="cOff" hidden></span><span class="chip" id="cSt"></span></div>
-    <button type="button" class="bubble" id="cInfo" aria-label="Explication détaillée">i</button>
     <h2 class="qtext" id="cQ"></h2>
     <button type="button" class="reveal" id="cReveal">Voir la réponse</button>
     <div class="answer" id="cA" hidden>
       <div class="alabel">Réponse</div>
       <p class="atext" id="cAText"></p>
-      <button type="button" class="more" id="cMore">Explication détaillée et mes notes →</button>
+      <div class="alabel cexp-l">Explication détaillée</div>
+      <div class="detail" id="cExp"></div>
+      <button type="button" class="more" id="cMore">Mes notes →</button>
     </div>
   </article>
   <p class="hint">Glisse à gauche pour passer, à droite pour revenir. Clavier : ← → et espace.</p>
@@ -1676,7 +1684,7 @@ function renderCard(){
   var off=$("#cOff"); off.hidden=!x.o; off.textContent=x.o?OFF[x.o]:"";
   renderStatusChip();
   $("#cQ").textContent=x.q;
-  $("#cAText").textContent=x.a;
+  $("#cAText").textContent=x.a; $("#cExp").innerHTML=md(x.d);
   S.revealed=false; $("#cA").hidden=true; $("#cReveal").hidden=false;
   $("#aPrev").disabled=S.i===0;
   if(S.mode==="mock")startTimer(90); else {stopTimer();$("#cTimer").hidden=true;}
@@ -1711,11 +1719,11 @@ function endSession(){
 
 /* ---------- sheet ---------- */
 var sheetFor=null, lastFocus=null, noteT=null;
-function openSheet(idArg){
+function openSheet(idArg,notesOnly){
   var id=(typeof idArg==="string")?idArg:curId(), x=Q[id]; sheetFor=id; lastFocus=document.activeElement;
   $("#shCode").textContent=TH[x.t].c+" · "+LVL[x.l];
   $("#shTitle").textContent=x.q;
-  $("#shBody").innerHTML=md(x.d);
+  $("#shBody").innerHTML=md(x.d); $("#shBody").hidden=!!notesOnly;
   $("#shNote").value=noteOf(id); $("#shSaved").textContent=noteOf(id)?"Note enregistrée":"";
   $("#scrim").hidden=false; $("#sheet").hidden=false; $("#sheet").scrollTop=0;
   $("#shClose").focus();
@@ -1804,14 +1812,14 @@ function lid(){return L.q[L.i];}
 function setPhase(p){
   L.phase=p;
   ["ask","grade","fb"].forEach(function(n){$("#lf-"+n).hidden=(n!==p);});
-  $("#lAns").hidden=(p==="ask");
+  $("#lAns").hidden=(p==="ask"); $("#lExp").hidden=(p==="ask");
   var f=$("#lFoot"); f.classList.remove("good","bad");
 }
 function renderLesson(){
   var id=lid(), x=Q[id], t=TH[x.t];
   $("#lProg").style.width=(L.i/L.q.length*100)+"%";
   $("#lChip").textContent=t.c+" · "+LVL[x.l]+(x.o?" · "+OFF[x.o]:"");
-  $("#lQ").textContent=x.q; $("#lAText").textContent=x.a;
+  $("#lQ").textContent=x.q; $("#lAText").textContent=x.a; $("#lExpBody").innerHTML=md(x.d);
   var cb=$("#lCombo"); cb.hidden=L.combo<2; cb.innerHTML=FLAME+L.combo;
   setPhase("ask"); window.scrollTo(0,0);
 }
@@ -1872,7 +1880,7 @@ $("#lSkip").addEventListener("click",lessonSkip);
 $("#lWrong").addEventListener("click",function(){lessonMark(1);});
 $("#lRight").addEventListener("click",function(){lessonMark(2);});
 $("#lNext").addEventListener("click",lessonNext);
-$("#lMore").addEventListener("click",function(){openSheet(lid());});
+$("#lMore").addEventListener("click",function(){openSheet(lid(),true);});
 $("#lClose").addEventListener("click",function(){go("path");});
 $("#dGo").addEventListener("click",function(){$("#confetti").hidden=true;go("path");});
 
@@ -1894,8 +1902,7 @@ $("#bList").addEventListener("click",function(e){var b=e.target.closest("button[
 $("#tabs").addEventListener("click",function(e){var b=e.target.closest("button[data-go]");if(b)go(b.dataset.go);});
 $("#cClose").addEventListener("click",function(){stopTimer();go(S?S.from:"home");});
 $("#cReveal").addEventListener("click",reveal);
-$("#cInfo").addEventListener("click",openSheet);
-$("#cMore").addEventListener("click",openSheet);
+$("#cMore").addEventListener("click",function(){openSheet(curId(),true);});
 $("#aGreen").addEventListener("click",function(){mark(2);});
 $("#aAmber").addEventListener("click",function(){mark(1);});
 $("#aSkip").addEventListener("click",next);
@@ -1929,7 +1936,6 @@ document.addEventListener("keydown",function(e){
   if(e.key==="ArrowRight"){e.preventDefault();next();}
   else if(e.key==="ArrowLeft"){e.preventDefault();prev();}
   else if(e.key===" "&&tag!=="button"){e.preventDefault();reveal();}
-  else if(e.key==="i"){openSheet();}
   else if(e.key==="Escape"){stopTimer();go(S?S.from:"home");}
 });
 

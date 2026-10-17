@@ -229,7 +229,7 @@ function renderCard(){
   var off=$("#cOff"); off.hidden=!x.o; off.textContent=x.o?OFF[x.o]:"";
   renderStatusChip();
   $("#cQ").textContent=x.q;
-  $("#cAText").textContent=x.a;
+  $("#cAText").textContent=x.a; $("#cExp").innerHTML=md(x.d);
   S.revealed=false; $("#cA").hidden=true; $("#cReveal").hidden=false;
   $("#aPrev").disabled=S.i===0;
   if(S.mode==="mock")startTimer(90); else {stopTimer();$("#cTimer").hidden=true;}
@@ -264,11 +264,11 @@ function endSession(){
 
 /* ---------- sheet ---------- */
 var sheetFor=null, lastFocus=null, noteT=null;
-function openSheet(idArg){
+function openSheet(idArg,notesOnly){
   var id=(typeof idArg==="string")?idArg:curId(), x=Q[id]; sheetFor=id; lastFocus=document.activeElement;
   $("#shCode").textContent=TH[x.t].c+" · "+LVL[x.l];
   $("#shTitle").textContent=x.q;
-  $("#shBody").innerHTML=md(x.d);
+  $("#shBody").innerHTML=md(x.d); $("#shBody").hidden=!!notesOnly;
   $("#shNote").value=noteOf(id); $("#shSaved").textContent=noteOf(id)?"Note enregistrée":"";
   $("#scrim").hidden=false; $("#sheet").hidden=false; $("#sheet").scrollTop=0;
   $("#shClose").focus();
@@ -357,14 +357,14 @@ function lid(){return L.q[L.i];}
 function setPhase(p){
   L.phase=p;
   ["ask","grade","fb"].forEach(function(n){$("#lf-"+n).hidden=(n!==p);});
-  $("#lAns").hidden=(p==="ask");
+  $("#lAns").hidden=(p==="ask"); $("#lExp").hidden=(p==="ask");
   var f=$("#lFoot"); f.classList.remove("good","bad");
 }
 function renderLesson(){
   var id=lid(), x=Q[id], t=TH[x.t];
   $("#lProg").style.width=(L.i/L.q.length*100)+"%";
   $("#lChip").textContent=t.c+" · "+LVL[x.l]+(x.o?" · "+OFF[x.o]:"");
-  $("#lQ").textContent=x.q; $("#lAText").textContent=x.a;
+  $("#lQ").textContent=x.q; $("#lAText").textContent=x.a; $("#lExpBody").innerHTML=md(x.d);
   var cb=$("#lCombo"); cb.hidden=L.combo<2; cb.innerHTML=FLAME+L.combo;
   setPhase("ask"); window.scrollTo(0,0);
 }
@@ -425,7 +425,7 @@ $("#lSkip").addEventListener("click",lessonSkip);
 $("#lWrong").addEventListener("click",function(){lessonMark(1);});
 $("#lRight").addEventListener("click",function(){lessonMark(2);});
 $("#lNext").addEventListener("click",lessonNext);
-$("#lMore").addEventListener("click",function(){openSheet(lid());});
+$("#lMore").addEventListener("click",function(){openSheet(lid(),true);});
 $("#lClose").addEventListener("click",function(){go("path");});
 $("#dGo").addEventListener("click",function(){$("#confetti").hidden=true;go("path");});
 
@@ -447,8 +447,7 @@ $("#bList").addEventListener("click",function(e){var b=e.target.closest("button[
 $("#tabs").addEventListener("click",function(e){var b=e.target.closest("button[data-go]");if(b)go(b.dataset.go);});
 $("#cClose").addEventListener("click",function(){stopTimer();go(S?S.from:"home");});
 $("#cReveal").addEventListener("click",reveal);
-$("#cInfo").addEventListener("click",openSheet);
-$("#cMore").addEventListener("click",openSheet);
+$("#cMore").addEventListener("click",function(){openSheet(curId(),true);});
 $("#aGreen").addEventListener("click",function(){mark(2);});
 $("#aAmber").addEventListener("click",function(){mark(1);});
 $("#aSkip").addEventListener("click",next);
@@ -482,7 +481,6 @@ document.addEventListener("keydown",function(e){
   if(e.key==="ArrowRight"){e.preventDefault();next();}
   else if(e.key==="ArrowLeft"){e.preventDefault();prev();}
   else if(e.key===" "&&tag!=="button"){e.preventDefault();reveal();}
-  else if(e.key==="i"){openSheet();}
   else if(e.key==="Escape"){stopTimer();go(S?S.from:"home");}
 });
 

@@ -138,6 +138,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .alabel{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .atext{font-family:var(--f-read);font-size:17px;line-height:1.55;margin:6px 0 0;max-width:65ch}
 .more{margin-top:12px;background:none;border:0;padding:6px 0;color:var(--accent);font-weight:650}
+.cexp-l{margin-top:16px}
 .hint{color:var(--muted);font-size:12.5px;text-align:center;margin:12px 0 0}
 .actions,.tabs{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);border-top:1px solid var(--line);
   padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -261,6 +262,8 @@ html.play .tabs{background:var(--pl-bg);border-top:2px solid var(--pl-line)}
 .lans{border:2px solid var(--pl-line);background:var(--pl-soft);border-radius:16px;padding:14px 16px}
 .lans .alabel{font-family:var(--f-play);font-weight:900;color:var(--pl-muted)}
 .lans p{margin:6px 0 0;font-size:17px;font-weight:700;line-height:1.5;max-width:65ch}
+.lans .detail{margin-top:8px}
+.lans .detail p,.lans .detail ul{font-family:var(--f-play);font-weight:700;font-size:16px;line-height:1.55}
 .lans .more{font-family:var(--f-play);font-weight:900;color:var(--pl-blue)}
 .lfoot{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--pl-bg);border-top:2px solid var(--pl-line);padding:14px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .lfoot.good{background:var(--pl-ok-bg);border-top-color:transparent}
@@ -321,7 +324,11 @@ html.play .tabs{background:var(--pl-bg);border-top:2px solid var(--pl-line)}
     <div class="lans" id="lAns" hidden>
       <div class="alabel">Réponse</div>
       <p id="lAText"></p>
-      <button type="button" class="more" id="lMore">Explication détaillée et mes notes →</button>
+    </div>
+    <div class="lans" id="lExp" hidden>
+      <div class="alabel">Explication détaillée</div>
+      <div class="detail" id="lExpBody"></div>
+      <button type="button" class="more" id="lMore">Mes notes →</button>
     </div>
   </div>
   <div class="lfoot" id="lFoot"><div class="in">
@@ -428,13 +435,14 @@ html.play .tabs{background:var(--pl-bg);border-top:2px solid var(--pl-line)}
   <div class="progress"><i id="cProg"></i></div>
   <article class="card" id="card">
     <div class="chips"><span class="code" id="cCode"></span><span class="chip" id="cLvl"></span><span class="chip off" id="cOff" hidden></span><span class="chip" id="cSt"></span></div>
-    <button type="button" class="bubble" id="cInfo" aria-label="Explication détaillée">i</button>
     <h2 class="qtext" id="cQ"></h2>
     <button type="button" class="reveal" id="cReveal">Voir la réponse</button>
     <div class="answer" id="cA" hidden>
       <div class="alabel">Réponse</div>
       <p class="atext" id="cAText"></p>
-      <button type="button" class="more" id="cMore">Explication détaillée et mes notes →</button>
+      <div class="alabel cexp-l">Explication détaillée</div>
+      <div class="detail" id="cExp"></div>
+      <button type="button" class="more" id="cMore">Mes notes →</button>
     </div>
   </article>
   <p class="hint">Glisse à gauche pour passer, à droite pour revenir. Clavier : ← → et espace.</p>
